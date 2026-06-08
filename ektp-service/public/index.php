@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../app/helpers/response.php';
 require_once __DIR__ . '/../app/helpers/request.php';
+require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/controllers/CitizenController.php';
 
 $path = getRequestPath();

@@ -6,7 +6,7 @@ $method = getRequestMethod();
 $citizenController = new CitizenController();
 
 if ($method === 'GET' && preg_match('#^/api/verify-nik/([0-9]+)$#', $path, $matches)) {
-    $citizenController->verify($matches[1]);
+    $citizenController->verifyNik($matches[1]);
 }
 
 if ($method === 'GET' && preg_match('#^/api/citizen-status/([0-9]+)$#', $path, $matches)) {
