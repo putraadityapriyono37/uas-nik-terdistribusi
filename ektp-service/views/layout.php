@@ -11,6 +11,11 @@ if ($currentPath === '/citizens') {
     $pageTitle = 'Data Warga';
 }
 
+if ($currentPath === '/medical-records') {
+    $page = 'medical_records.php';
+    $pageTitle = 'Rekam Medis';
+}
+
 function isActiveMenu($path, $currentPath)
 {
     if ($path === '/' && $currentPath === '/') {
@@ -53,6 +58,11 @@ function isActiveMenu($path, $currentPath)
                 <a href="/citizens"
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-100' ?>">
                     Data Warga
+                </a>
+                
+                <a href="/medical-records"
+                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/medical-records', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-100' ?>">
+                    Rekam Medis
                 </a>
 
                 <a href="/api/verify-nik/3302010101010001"

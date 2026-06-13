@@ -83,6 +83,14 @@ Contoh response sukses:
 }
 ```
 
+## Halaman Web
+
+| Halaman     | URL                                     | Keterangan                             |
+| ----------- | --------------------------------------- | -------------------------------------- |
+| Dashboard   | `http://localhost:8000`                 | Ringkasan layanan E-KTP                |
+| Data Warga  | `http://localhost:8000/citizens`        | Menampilkan data master warga          |
+| Rekam Medis | `http://localhost:8000/medical-records` | Menampilkan data rekam medis dari RSUD |
+
 ## Cara Menjalankan
 
 Masuk ke folder public E-KTP Service:
