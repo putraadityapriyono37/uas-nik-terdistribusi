@@ -56,6 +56,73 @@ class CitizenController
         jsonResponse(true, 'Status warga berhasil ditemukan.', $citizen);
     }
 
+    public function storeMedicalRecord()
+{
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    if (!$input) {
+        jsonResponse(false, 'Body request harus berupa JSON.', null, 400);
+    }
+
+    $nik = $input['nik'] ?? '';
+    $diagnosis = $input['diagnosis'] ?? '';
+    $tindakan = $input['tindakan'] ?? null;
+    $obat = $input['obat'] ?? null;
+    $rumahSakit = $input['rumah_sakit'] ?? 'RSUD Service';
+    $tanggalPeriksa = $input['tanggal_periksa'] ?? date('Y-m-d');
+
+    if (!$this->isValidNik($nik)) {
+        $this->saveAuditLog('RSUD', '/api/medical-record', 'POST', $nik, 'failed', 'Format NIK tidak valid');
+        jsonResponse(false, 'Format NIK harus 16 digit angka.', null, 400);
+    }
+
+    if (trim($diagnosis) === '') {
+        $this->saveAuditLog('RSUD', '/api/medical-record', 'POST', $nik, 'failed', 'Diagnosis wajib diisi');
+        jsonResponse(false, 'Diagnosis wajib diisi.', null, 400);
+    }
+
+    $stmt = $this->db->prepare("SELECT nik, nama, status_aktif FROM citizens WHERE nik = ? LIMIT 1");
+    $stmt->execute([$nik]);
+    $citizen = $stmt->fetch();
+
+    if (!$citizen) {
+        $this->saveAuditLog('RSUD', '/api/medical-record', 'POST', $nik, 'not_found', 'NIK tidak ditemukan');
+        jsonResponse(false, 'NIK tidak ditemukan dalam database E-KTP.', null, 404);
+    }
+
+    if ($citizen['status_aktif'] !== 'aktif') {
+        $this->saveAuditLog('RSUD', '/api/medical-record', 'POST', $nik, 'inactive', 'NIK nonaktif');
+        jsonResponse(false, 'Data rekam medis tidak dapat disimpan karena status warga tidak aktif.', null, 403);
+    }
+
+    $stmt = $this->db->prepare("
+        INSERT INTO medical_records (nik, diagnosis, tindakan, obat, rumah_sakit, tanggal_periksa)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+
+    $stmt->execute([
+        $nik,
+        $diagnosis,
+        $tindakan,
+        $obat,
+        $rumahSakit,
+        $tanggalPeriksa
+    ]);
+
+    $this->saveAuditLog('RSUD', '/api/medical-record', 'POST', $nik, 'success', 'Rekam medis berhasil disimpan');
+
+    jsonResponse(true, 'Rekam medis berhasil dikirim ke E-KTP.', [
+        'id' => $this->db->lastInsertId(),
+        'nik' => $nik,
+        'nama' => $citizen['nama'],
+        'diagnosis' => $diagnosis,
+        'tindakan' => $tindakan,
+        'obat' => $obat,
+        'rumah_sakit' => $rumahSakit,
+        'tanggal_periksa' => $tanggalPeriksa
+    ], 201);
+}
+
     private function isValidNik($nik)
     {
         return preg_match('/^[0-9]{16}$/', $nik);

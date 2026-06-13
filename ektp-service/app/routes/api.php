@@ -13,4 +13,8 @@ if ($method === 'GET' && preg_match('#^/api/citizen-status/([0-9]+)$#', $path, $
     $citizenController->citizenStatus($matches[1]);
 }
 
+if ($method === 'POST' && $path === '/api/medical-record') {
+    $citizenController->storeMedicalRecord();
+}
+
 jsonResponse(false, 'Endpoint tidak ditemukan', null, 404);
