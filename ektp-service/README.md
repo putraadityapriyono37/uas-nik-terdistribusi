@@ -2,13 +2,19 @@
 
 E-KTP Service adalah pusat data warga dalam sistem integrasi layanan publik berbasis NIK. Service ini berperan sebagai hub utama yang menyediakan data identitas warga untuk digunakan oleh service lain seperti RSUD, Bansos, dan SPBU.
 
-## Port
+Service ini berjalan secara mandiri pada port `8000` dan memiliki database sendiri, yaitu `db_ektp`.
 
-Service ini berjalan pada port:
+## Informasi Service
 
-```bash
-localhost:8000
-```
+| Keterangan       | Detail                   |
+| ---------------- | ------------------------ |
+| Nama Service     | E-KTP Service            |
+| Port             | `localhost:8000`         |
+| Database         | `db_ektp`                |
+| Bahasa           | PHP Native               |
+| Format API       | JSON                     |
+| Koneksi Database | PDO                      |
+| Peran Sistem     | Hub utama verifikasi NIK |
 
 ## Database
 
@@ -18,7 +24,15 @@ Database yang digunakan:
 db_ektp
 ```
 
-## Endpoint
+Tabel utama:
+
+| Tabel             | Fungsi                                        |
+| ----------------- | --------------------------------------------- |
+| `citizens`        | Menyimpan data master warga                   |
+| `medical_records` | Menyimpan rekam medis yang dikirim dari RSUD  |
+| `audit_logs`      | Menyimpan riwayat request yang masuk ke E-KTP |
+
+## Endpoint API
 
 ### 1. Verifikasi NIK
 
@@ -53,6 +67,16 @@ Contoh response sukses:
 }
 ```
 
+Contoh response gagal:
+
+```json
+{
+  "success": false,
+  "message": "NIK tidak ditemukan dalam database E-KTP.",
+  "data": null
+}
+```
+
 ### 2. Cek Status Warga
 
 Endpoint ini digunakan untuk melihat status ekonomi dan kuota BBM warga berdasarkan NIK.
@@ -83,6 +107,101 @@ Contoh response sukses:
 }
 ```
 
+### 3. Kirim Rekam Medis
+
+Endpoint ini digunakan oleh RSUD Service untuk mengirim data rekam medis warga ke E-KTP.
+
+```http
+POST /api/medical-record
+```
+
+Contoh request:
+
+```text
+http://localhost:8000/api/medical-record
+```
+
+Header:
+
+```text
+Content-Type: application/json
+```
+
+Body request:
+
+```json
+{
+  "nik": "3302010101010001",
+  "diagnosis": "Demam dan batuk",
+  "tindakan": "Pemeriksaan umum",
+  "obat": "Paracetamol 500mg",
+  "rumah_sakit": "RSUD Banyumas",
+  "tanggal_periksa": "2026-06-10"
+}
+```
+
+Contoh response sukses:
+
+```json
+{
+  "success": true,
+  "message": "Rekam medis berhasil dikirim ke E-KTP.",
+  "data": {
+    "id": "1",
+    "nik": "3302010101010001",
+    "nama": "Putra Aditya Priyono",
+    "diagnosis": "Demam dan batuk",
+    "tindakan": "Pemeriksaan umum",
+    "obat": "Paracetamol 500mg",
+    "rumah_sakit": "RSUD Banyumas",
+    "tanggal_periksa": "2026-06-10"
+  }
+}
+```
+
+### 4. Update Kuota BBM
+
+Endpoint ini digunakan oleh SPBU Service untuk memperbarui sisa kuota BBM warga setelah transaksi BBM.
+
+```http
+PUT /api/bbm-quota/{nik}
+```
+
+Contoh request:
+
+```text
+http://localhost:8000/api/bbm-quota/3302010101010001
+```
+
+Header:
+
+```text
+Content-Type: application/json
+```
+
+Body request:
+
+```json
+{
+  "kuota_bbm": 24.5
+}
+```
+
+Contoh response sukses:
+
+```json
+{
+  "success": true,
+  "message": "Kuota BBM berhasil diperbarui di E-KTP.",
+  "data": {
+    "nik": "3302010101010001",
+    "nama": "Putra Aditya Priyono",
+    "kuota_sebelumnya": "30.00",
+    "kuota_sekarang": "24.50"
+  }
+}
+```
+
 ## Halaman Web
 
 | Halaman     | URL                                     | Keterangan                             |
@@ -93,15 +212,10 @@ Contoh response sukses:
 
 ## Cara Menjalankan
 
-Masuk ke folder public E-KTP Service:
+Pastikan MySQL pada Laragon sudah aktif, lalu jalankan service dari folder `public`.
 
 ```bash
 cd ektp-service/public
-```
-
-Jalankan server PHP:
-
-```bash
 php -S localhost:8000
 ```
 
@@ -111,24 +225,58 @@ Buka dashboard di browser:
 http://localhost:8000
 ```
 
+## Cara Testing API
+
+API dapat dites menggunakan Postman.
+
+Contoh endpoint yang dapat dites:
+
+| Method | Endpoint                    | Keterangan                       |
+| ------ | --------------------------- | -------------------------------- |
+| GET    | `/api/verify-nik/{nik}`     | Verifikasi NIK warga             |
+| GET    | `/api/citizen-status/{nik}` | Cek status ekonomi dan kuota BBM |
+| POST   | `/api/medical-record`       | Kirim rekam medis dari RSUD      |
+| PUT    | `/api/bbm-quota/{nik}`      | Update kuota BBM dari SPBU       |
+
 ## Struktur Folder
 
 ```text
 ektp-service/
 ├── app/
 │   ├── config/
+│   │   ├── app.php
+│   │   └── database.php
 │   ├── controllers/
+│   │   └── CitizenController.php
 │   ├── helpers/
+│   │   ├── request.php
+│   │   └── response.php
 │   └── routes/
+│       └── api.php
 ├── database/
+│   └── db_ektp.sql
 ├── public/
+│   ├── index.php
+│   └── assets/
 ├── views/
+│   ├── dashboard.php
+│   ├── citizens.php
+│   ├── medical_records.php
+│   └── layout.php
 └── README.md
 ```
 
-## Catatan
+## Catatan Integrasi
+
+- RSUD Service menggunakan endpoint E-KTP untuk verifikasi NIK dan mengirim rekam medis.
+- Bansos Service menggunakan endpoint E-KTP untuk mengecek status ekonomi warga.
+- SPBU Service menggunakan endpoint E-KTP untuk verifikasi NIK dan update kuota BBM.
+- Setiap request penting yang masuk ke E-KTP dicatat pada tabel `audit_logs`.
+
+## Catatan Teknis
 
 - Service ini menggunakan PHP Native.
+- Tampilan web menggunakan Tailwind CSS via CDN.
 - Koneksi database menggunakan PDO.
 - Response API menggunakan format JSON.
-- Service ini menjadi pusat verifikasi NIK untuk integrasi antar layanan.
+- Service ini menjadi pusat verifikasi data warga dalam sistem integrasi layanan publik berbasis NIK.

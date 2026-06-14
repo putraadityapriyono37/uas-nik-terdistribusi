@@ -123,6 +123,71 @@ class CitizenController
     ], 201);
 }
 
+    public function updateBbmQuota($nik)
+{
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    if (!$input) {
+        jsonResponse(false, 'Body request harus berupa JSON.', null, 400);
+    }
+
+    if (!$this->isValidNik($nik)) {
+        $this->saveAuditLog('SPBU', '/api/bbm-quota/' . $nik, 'PUT', $nik, 'failed', 'Format NIK tidak valid');
+        jsonResponse(false, 'Format NIK harus 16 digit angka.', null, 400);
+    }
+
+    if (!isset($input['kuota_bbm'])) {
+        $this->saveAuditLog('SPBU', '/api/bbm-quota/' . $nik, 'PUT', $nik, 'failed', 'Kuota BBM wajib dikirim');
+        jsonResponse(false, 'Kuota BBM wajib dikirim.', null, 400);
+    }
+
+    $kuotaBbm = $input['kuota_bbm'];
+
+    if (!is_numeric($kuotaBbm)) {
+        $this->saveAuditLog('SPBU', '/api/bbm-quota/' . $nik, 'PUT', $nik, 'failed', 'Kuota BBM harus berupa angka');
+        jsonResponse(false, 'Kuota BBM harus berupa angka.', null, 400);
+    }
+
+    if ($kuotaBbm < 0) {
+        $this->saveAuditLog('SPBU', '/api/bbm-quota/' . $nik, 'PUT', $nik, 'failed', 'Kuota BBM tidak boleh kurang dari 0');
+        jsonResponse(false, 'Kuota BBM tidak boleh kurang dari 0.', null, 400);
+    }
+
+    $stmt = $this->db->prepare("SELECT nik, nama, kuota_bbm, status_aktif FROM citizens WHERE nik = ? LIMIT 1");
+    $stmt->execute([$nik]);
+    $citizen = $stmt->fetch();
+
+    if (!$citizen) {
+        $this->saveAuditLog('SPBU', '/api/bbm-quota/' . $nik, 'PUT', $nik, 'not_found', 'NIK tidak ditemukan');
+        jsonResponse(false, 'NIK tidak ditemukan dalam database E-KTP.', null, 404);
+    }
+
+    if ($citizen['status_aktif'] !== 'aktif') {
+        $this->saveAuditLog('SPBU', '/api/bbm-quota/' . $nik, 'PUT', $nik, 'inactive', 'NIK nonaktif');
+        jsonResponse(false, 'Kuota BBM tidak dapat diperbarui karena status warga tidak aktif.', null, 403);
+    }
+
+    $stmt = $this->db->prepare("
+        UPDATE citizens 
+        SET kuota_bbm = ?
+        WHERE nik = ?
+    ");
+
+    $stmt->execute([
+        $kuotaBbm,
+        $nik
+    ]);
+
+    $this->saveAuditLog('SPBU', '/api/bbm-quota/' . $nik, 'PUT', $nik, 'success', 'Kuota BBM berhasil diperbarui');
+
+    jsonResponse(true, 'Kuota BBM berhasil diperbarui di E-KTP.', [
+        'nik' => $nik,
+        'nama' => $citizen['nama'],
+        'kuota_sebelumnya' => $citizen['kuota_bbm'],
+        'kuota_sekarang' => number_format((float) $kuotaBbm, 2, '.', '')
+    ]);
+}
+
     private function isValidNik($nik)
     {
         return preg_match('/^[0-9]{16}$/', $nik);

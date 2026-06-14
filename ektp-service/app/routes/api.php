@@ -17,4 +17,8 @@ if ($method === 'POST' && $path === '/api/medical-record') {
     $citizenController->storeMedicalRecord();
 }
 
+if ($method === 'PUT' && preg_match('#^/api/bbm-quota/([0-9]+)$#', $path, $matches)) {
+    $citizenController->updateBbmQuota($matches[1]);
+}
+
 jsonResponse(false, 'Endpoint tidak ditemukan', null, 404);
