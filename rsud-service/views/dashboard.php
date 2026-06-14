@@ -24,8 +24,8 @@
 
         <div class="rounded-xl border border-emerald-100 bg-white p-5">
             <p class="text-sm text-slate-500">Endpoint Utama</p>
-            <p class="mt-2 text-xl font-semibold text-slate-900">1 Endpoint</p>
-            <p class="mt-1 text-xs text-slate-500">Registrasi pasien</p>
+            <p class="mt-2 text-xl font-semibold text-slate-900">2 Endpoint</p>
+            <p class="mt-1 text-xs text-slate-500">Registrasi pasien dan rekam medis</p>
         </div>
     </div>
 
@@ -35,10 +35,19 @@
             <p class="mt-1 text-sm text-slate-500">Endpoint awal yang tersedia pada RSUD Service.</p>
         </div>
 
-        <div class="grid gap-2 px-5 py-4 md:grid-cols-3">
-            <div class="text-sm font-medium text-emerald-700">POST</div>
-            <div class="font-mono text-sm text-slate-700 md:col-span-2">
-                /api/register-patient
+        <div class="divide-y divide-emerald-100">
+            <div class="grid gap-2 px-5 py-4 md:grid-cols-3">
+                <div class="text-sm font-medium text-emerald-700">POST</div>
+                <div class="font-mono text-sm text-slate-700 md:col-span-2">
+                    /api/register-patient
+                </div>
+            </div>
+
+            <div class="grid gap-2 px-5 py-4 md:grid-cols-3">
+                <div class="text-sm font-medium text-emerald-700">POST</div>
+                <div class="font-mono text-sm text-slate-700 md:col-span-2">
+                    /api/medical-record
+                </div>
             </div>
         </div>
     </div>

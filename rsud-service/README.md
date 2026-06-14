@@ -87,6 +87,68 @@ Content-Type: application/json
 }
 ```
 
+### 2. Kirim Rekam Medis
+
+Endpoint ini digunakan untuk mengirim data rekam medis pasien dari RSUD Service ke E-KTP Service.
+
+#### Request
+
+```http
+POST /api/medical-record
+```
+
+#### URL
+
+```text
+http://localhost:8001/api/medical-record
+```
+
+#### Header
+
+```http
+Content-Type: application/json
+```
+
+#### Body Request
+
+```json
+{
+  "nik": "3302010101010001",
+  "diagnosis": "Demam tinggi",
+  "tindakan": "Pemeriksaan suhu dan tekanan darah",
+  "obat": "Paracetamol 500mg",
+  "tanggal_periksa": "2026-06-10"
+}
+```
+
+#### Response Sukses
+
+```json
+{
+  "success": true,
+  "message": "Rekam medis berhasil dikirim dari RSUD ke E-KTP.",
+  "data": {
+    "nik": "3302010101010001",
+    "nama": "Putra Aditya Priyono",
+    "diagnosis": "Demam tinggi",
+    "tindakan": "Pemeriksaan suhu dan tekanan darah",
+    "obat": "Paracetamol 500mg",
+    "tanggal_periksa": "2026-06-10",
+    "sumber_pengiriman": "RSUD Service",
+    "target_service": "E-KTP Service"
+  }
+}
+```
+
+#### Alur Integrasi
+
+1. RSUD menerima data rekam medis pasien.
+2. RSUD memverifikasi NIK ke E-KTP Service.
+3. Jika NIK valid, data rekam medis dikirim ke E-KTP Service.
+4. E-KTP Service menyimpan data ke tabel `medical_records`.
+5. E-KTP Service mencatat aktivitas pada `audit_logs`.
+6. Response sukses dikembalikan ke client.
+
 ---
 
 ## Halaman Web

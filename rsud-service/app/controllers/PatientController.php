@@ -74,4 +74,78 @@ class PatientController
             'sumber_data' => 'E-KTP Service'
         ], 201);
     }
+
+    public function sendMedicalRecord()
+    {
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        if (!$input) {
+            jsonResponse(false, 'Body request harus berupa JSON.', null, 400);
+        }
+
+        $nik = $input['nik'] ?? '';
+        $diagnosis = $input['diagnosis'] ?? '';
+        $tindakan = $input['tindakan'] ?? null;
+        $obat = $input['obat'] ?? null;
+        $tanggalPeriksa = $input['tanggal_periksa'] ?? date('Y-m-d');
+
+        if (!preg_match('/^[0-9]{16}$/', $nik)) {
+            jsonResponse(false, 'Format NIK harus 16 digit angka.', null, 400);
+        }
+
+        if (trim($diagnosis) === '') {
+            jsonResponse(false, 'Diagnosis wajib diisi.', null, 400);
+        }
+
+        $ektpVerifyUrl = $this->app['ektp_base_url'] . '/api/verify-nik/' . $nik;
+        $verifyResponse = sendGetRequest($ektpVerifyUrl);
+
+        if (!$verifyResponse['success']) {
+            jsonResponse(false, 'Gagal memverifikasi NIK ke E-KTP Service.', [
+                'target_service' => 'E-KTP',
+                'url' => $ektpVerifyUrl,
+                'response' => $verifyResponse
+            ], 502);
+        }
+
+        $verifyData = $verifyResponse['data'];
+
+        if (!$verifyData || !$verifyData['success']) {
+            jsonResponse(false, 'Rekam medis tidak dapat dikirim karena NIK tidak valid.', $verifyData, 404);
+        }
+
+        $citizen = $verifyData['data'];
+
+        $payload = [
+            'nik' => $nik,
+            'diagnosis' => $diagnosis,
+            'tindakan' => $tindakan,
+            'obat' => $obat,
+            'rumah_sakit' => 'RSUD Service',
+            'tanggal_periksa' => $tanggalPeriksa
+        ];
+
+        $ektpMedicalRecordUrl = $this->app['ektp_base_url'] . '/api/medical-record';
+        $medicalRecordResponse = sendPostRequest($ektpMedicalRecordUrl, $payload);
+
+        if (!$medicalRecordResponse['success']) {
+            jsonResponse(false, 'Gagal mengirim rekam medis ke E-KTP Service.', [
+                'target_service' => 'E-KTP',
+                'url' => $ektpMedicalRecordUrl,
+                'response' => $medicalRecordResponse
+            ], 502);
+        }
+
+        jsonResponse(true, 'Rekam medis berhasil dikirim dari RSUD ke E-KTP.', [
+            'nik' => $nik,
+            'nama' => $citizen['nama'],
+            'diagnosis' => $diagnosis,
+            'tindakan' => $tindakan,
+            'obat' => $obat,
+            'tanggal_periksa' => $tanggalPeriksa,
+            'sumber_pengiriman' => 'RSUD Service',
+            'target_service' => 'E-KTP Service',
+            'ektp_response' => $medicalRecordResponse['data']
+        ], 201);
+    }
 }
