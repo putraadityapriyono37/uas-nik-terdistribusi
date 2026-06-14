@@ -5,6 +5,10 @@ $currentPath = getRequestPath();
 $page = 'dashboard.php';
 $pageTitle = 'Dashboard';
 
+if ($currentPath === '/patients') {
+    $page = 'patients.php';
+    $pageTitle = 'Data Pasien';
+}
 function isActiveMenu($path, $currentPath)
 {
     if ($path === '/' && $currentPath === '/') {
@@ -40,8 +44,13 @@ function isActiveMenu($path, $currentPath)
 
             <nav class="mt-8 space-y-1">
                 <a href="/"
-                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-emerald-50' ?>">
+                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-emerald-50' ?>">
                     Dashboard
+                </a>
+
+                <a href="/patients"
+                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/patients', $currentPath) ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-emerald-50' ?>">
+                    Data Pasien
                 </a>
             </nav>
 
