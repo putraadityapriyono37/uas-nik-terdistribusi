@@ -209,6 +209,7 @@ Contoh response sukses:
 | Dashboard   | `http://localhost:8000`                 | Ringkasan layanan E-KTP                |
 | Data Warga  | `http://localhost:8000/citizens`        | Menampilkan data master warga          |
 | Rekam Medis | `http://localhost:8000/medical-records` | Menampilkan data rekam medis dari RSUD |
+| Audit Log   | `http://localhost:8000/audit-logs`      |  Menampilkan riwayat request yang masuk ke E-KTP |
 
 ## Cara Menjalankan
 
