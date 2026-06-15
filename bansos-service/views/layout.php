@@ -29,34 +29,34 @@ function isActiveMenu($path, $currentPath)
 </head>
 <body class="bg-amber-50/40 text-stone-800">
     <div class="min-h-screen">
-        <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-amber-100 bg-white px-6 py-6 md:block">
+        <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-amber-200 bg-stone-950 px-6 py-6 md:block">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
                     Layanan Sosial
                 </p>
-                <h1 class="mt-2 text-lg font-semibold text-stone-900">
+                <h1 class="mt-2 text-lg font-semibold text-white">
                     Bansos Service
                 </h1>
-                <p class="mt-1 text-xs leading-5 text-stone-500">
+                <p class="mt-1 text-xs leading-5 text-stone-300">
                     Penerima bantuan berbasis NIK.
                 </p>
             </div>
 
             <nav class="mt-8 space-y-1">
                 <a href="/"
-                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-amber-50 text-amber-800' : 'text-stone-600 hover:bg-amber-50' ?>">
+                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-amber-100 text-stone-950' : 'text-stone-300 hover:bg-stone-800 hover:text-white' ?>">
                     Dashboard
                 </a>
 
                 <a href="/recipients"
-                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/recipients', $currentPath) ? 'bg-amber-50 text-amber-800' : 'text-stone-600 hover:bg-amber-50' ?>">
+                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/recipients', $currentPath) ? 'bg-amber-100 text-stone-950' : 'text-stone-300 hover:bg-stone-800 hover:text-white' ?>">
                     Data Penerima
                 </a>
             </nav>
 
-            <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-amber-100 bg-amber-50/60 p-4">
-                <p class="text-xs font-medium text-stone-500">Port Service</p>
-                <p class="mt-1 font-mono text-sm text-stone-900">localhost:8003</p>
+            <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-stone-700 bg-stone-900 p-4">
+                <p class="text-xs font-medium text-stone-400">Port Service</p>
+                <p class="mt-1 font-mono text-sm text-white">localhost:8003</p>
             </div>
         </aside>
 

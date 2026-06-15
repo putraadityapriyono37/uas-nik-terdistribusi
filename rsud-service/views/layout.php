@@ -29,34 +29,34 @@ function isActiveMenu($path, $currentPath)
 </head>
 <body class="bg-emerald-50/40 text-slate-800">
     <div class="min-h-screen">
-        <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-emerald-100 bg-white px-6 py-6 md:block">
+        <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-emerald-200 bg-emerald-950 px-6 py-6 md:block">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
                     Layanan Kesehatan
                 </p>
-                <h1 class="mt-2 text-lg font-semibold text-slate-900">
+                <h1 class="mt-2 text-lg font-semibold text-white">
                     RSUD Service
                 </h1>
-                <p class="mt-1 text-xs leading-5 text-slate-500">
+                <p class="mt-1 text-xs leading-5 text-emerald-100/70">
                     Registrasi pasien berbasis NIK.
                 </p>
             </div>
 
             <nav class="mt-8 space-y-1">
                 <a href="/"
-                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-emerald-50' ?>">
+                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
                     Dashboard
                 </a>
 
                 <a href="/patients"
-                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/patients', $currentPath) ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-emerald-50' ?>">
+                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/patients', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
                     Data Pasien
                 </a>
             </nav>
 
-            <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-emerald-100 bg-emerald-50/60 p-4">
-                <p class="text-xs font-medium text-slate-500">Port Service</p>
-                <p class="mt-1 font-mono text-sm text-slate-900">localhost:8001</p>
+            <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-emerald-800 bg-emerald-900 p-4">
+                <p class="text-xs font-medium text-emerald-100/70">Port Service</p>
+                <p class="mt-1 font-mono text-sm text-white">localhost:8001</p>
             </div>
         </aside>
 

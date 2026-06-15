@@ -29,34 +29,34 @@ function isActiveMenu($path, $currentPath)
 </head>
 <body class="bg-red-50/30 text-zinc-800">
     <div class="min-h-screen">
-        <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-red-100 bg-white px-6 py-6 md:block">
+        <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-red-200 bg-zinc-950 px-6 py-6 md:block">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-red-800">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">
                     Layanan Energi
                 </p>
-                <h1 class="mt-2 text-lg font-semibold text-zinc-900">
+                <h1 class="mt-2 text-lg font-semibold text-white">
                     SPBU Service
                 </h1>
-                <p class="mt-1 text-xs leading-5 text-zinc-500">
+                <p class="mt-1 text-xs leading-5 text-zinc-400">
                     Transaksi BBM berbasis NIK.
                 </p>
             </div>
 
             <nav class="mt-8 space-y-1">
                 <a href="/"
-                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-red-50 text-red-900' : 'text-zinc-600 hover:bg-red-50' ?>">
+                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-white text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white' ?>">
                     Dashboard
                 </a>
 
                 <a href="/transactions"
-                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/transactions', $currentPath) ? 'bg-red-50 text-red-900' : 'text-zinc-600 hover:bg-red-50' ?>">
+                class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/transactions', $currentPath) ? 'bg-white text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white' ?>">
                     Data Transaksi
                 </a>
             </nav>
 
-            <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-red-100 bg-red-50/60 p-4">
-                <p class="text-xs font-medium text-zinc-500">Port Service</p>
-                <p class="mt-1 font-mono text-sm text-zinc-900">localhost:8002</p>
+            <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-zinc-700 bg-zinc-900 p-4">
+                <p class="text-xs font-medium text-zinc-400">Port Service</p>
+                <p class="mt-1 font-mono text-sm text-white">localhost:8002</p>
             </div>
         </aside>
 

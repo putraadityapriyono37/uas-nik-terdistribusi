@@ -41,54 +41,54 @@ function isActiveMenu($path, $currentPath)
 </head>
 <body class="bg-slate-50 text-slate-800">
     <div class="min-h-screen">
-        <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200 bg-white px-6 py-6 md:block">
+        <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200 bg-slate-950 px-6 py-6 md:block">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                     Layanan NIK
                 </p>
-                <h1 class="mt-2 text-lg font-semibold text-slate-900">
+                <h1 class="mt-2 text-lg font-semibold text-white">
                     E-KTP Service
                 </h1>
-                <p class="mt-1 text-xs leading-5 text-slate-500">
+                <p class="mt-1 text-xs leading-5 text-slate-400">
                     Pusat verifikasi identitas warga.
                 </p>
             </div>
 
             <nav class="mt-8 space-y-1">
                 <a href="/"
-                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-100' ?>">
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/', $currentPath) ? 'bg-white text-slate-950' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
                     Dashboard
                 </a>
 
                 <a href="/citizens"
-                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-100' ?>">
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
                     Data Warga
                 </a>
                 
                 <a href="/medical-records"
-                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/medical-records', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-100' ?>">
+                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/medical-records', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
                     Rekam Medis
                 </a>
 
                 <a href="/audit-logs"
-                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/audit-logs', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-100' ?>">
+                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/audit-logs', $currentPath) ? 'bg-slate-100 text-slate-900' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
                     Audit Log
                 </a>
 
                 <a href="/api/verify-nik/3302010101010001"
-                   class="block rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+                   class="block rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
                     Tes Verifikasi NIK
                 </a>
 
                 <a href="/api/citizen-status/3302010101010001"
-                   class="block rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+                   class="block rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
                     Tes Status Warga
                 </a>
             </nav>
 
-            <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <p class="text-xs font-medium text-slate-500">Port Service</p>
-                <p class="mt-1 font-mono text-sm text-slate-900">localhost:8000</p>
+            <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-slate-700 bg-slate-900 p-4">
+                <p class="text-xs font-medium text-slate-400">Port Service</p>
+                <p class="mt-1 font-mono text-sm text-white">localhost:8000</p>
             </div>
         </aside>
 
