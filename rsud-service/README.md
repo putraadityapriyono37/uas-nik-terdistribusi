@@ -1,68 +1,55 @@
 # RSUD Service
 
-## Deskripsi
-
-**RSUD Service** merupakan layanan registrasi pasien berbasis verifikasi NIK dalam sistem layanan publik terdistribusi. Service ini melakukan integrasi dengan **E-KTP Service** untuk memastikan bahwa NIK pasien valid dan terdaftar sebelum data pasien disimpan ke database RSUD.
-
-Dengan mekanisme ini, data pasien dapat diperoleh secara otomatis berdasarkan data kependudukan yang tersimpan pada E-KTP Service sehingga mengurangi duplikasi dan kesalahan input data.
-
----
+RSUD Service merupakan service yang menangani registrasi pasien dan pengiriman rekam medis pada sistem layanan publik terdistribusi berbasis NIK. Service ini terintegrasi dengan E-KTP Service untuk verifikasi data warga dan dengan Bansos Service untuk menentukan tarif otomatis pasien.
 
 ## Informasi Service
 
-| Keterangan         | Detail           |
-| ------------------ | ---------------- |
-| Nama Service       | RSUD Service     |
-| Port               | `localhost:8001` |
-| Database           | `db_rsud`        |
-| Bahasa Pemrograman | PHP Native       |
-| Format API         | JSON             |
-| Koneksi Database   | PDO              |
-| Integrasi Utama    | E-KTP Service    |
+| Item         | Keterangan                                     |
+| ------------ | ---------------------------------------------- |
+| Nama Service | RSUD Service                                   |
+| Port         | localhost:8001                                 |
+| Database     | db_rsud                                        |
+| Teknologi    | PHP Native, MySQL, PDO, REST API, Tailwind CSS |
 
----
+## Fitur Utama
 
-## Database
+- Dashboard RSUD
+- Registrasi pasien berbasis NIK
+- Verifikasi data pasien ke E-KTP Service
+- Cek status bansos ke Bansos Service
+- Logika tarif otomatis
+- Data pasien
+- Sinkronisasi ulang tarif pasien
+- Hapus data pasien
+- Form rekam medis digital
+- Kirim rekam medis ke E-KTP Service
 
-Database yang digunakan:
+## Halaman Web
 
-```text
-db_rsud
-```
+| Halaman           | URL                                    |
+| ----------------- | -------------------------------------- |
+| Dashboard         | http://localhost:8001                  |
+| Data Pasien       | http://localhost:8001/patients         |
+| Registrasi Pasien | http://localhost:8001/register-patient |
+| Kirim Rekam Medis | http://localhost:8001/medical-record   |
 
-### Tabel Utama
+## Logika Tarif Otomatis
 
-| Tabel    | Fungsi                                 |
-| -------- | -------------------------------------- |
-| patients | Menyimpan data pasien hasil registrasi |
-
----
+| Kondisi                              | Jenis Pasien | Tarif        |
+| ------------------------------------ | ------------ | ------------ |
+| Penerima bansos aktif                | bansos       | GRATIS       |
+| Status ekonomi kurang mampu / rentan | kurang_mampu | Diskon 20%   |
+| Warga umum                           | umum         | Tarif Normal |
 
 ## Endpoint API
 
 ### 1. Registrasi Pasien
 
-Endpoint ini digunakan untuk mendaftarkan pasien berdasarkan NIK. Sebelum data disimpan, RSUD Service akan memanggil E-KTP Service untuk melakukan verifikasi NIK.
-
-#### Request
-
 ```http
 POST /api/register-patient
 ```
 
-#### URL
-
-```text
-http://localhost:8001/api/register-patient
-```
-
-#### Header
-
-```http
-Content-Type: application/json
-```
-
-#### Body Request
+Contoh body:
 
 ```json
 {
@@ -70,46 +57,31 @@ Content-Type: application/json
 }
 ```
 
-#### Response Sukses
+Fungsi:
 
-```json
-{
-  "success": true,
-  "message": "Pasien berhasil diregistrasi berdasarkan data E-KTP.",
-  "data": {
-    "id": "1",
-    "nik": "3302010101010001",
-    "nama": "Putra Aditya Priyono",
-    "jenis_pasien": "umum",
-    "tarif": "Tarif Normal",
-    "sumber_data": "E-KTP Service"
-  }
-}
+```text
+Mendaftarkan pasien berdasarkan data warga dari E-KTP Service.
 ```
 
+Alur integrasi:
+
+```text
+1. RSUD menerima input NIK.
+2. RSUD memanggil E-KTP Service untuk verifikasi NIK.
+3. RSUD memanggil Bansos Service untuk mengecek status bansos.
+4. RSUD menentukan tarif otomatis.
+5. RSUD menyimpan data pasien ke database lokal db_rsud.
+```
+
+---
+
 ### 2. Kirim Rekam Medis
-
-Endpoint ini digunakan untuk mengirim data rekam medis pasien dari RSUD Service ke E-KTP Service.
-
-#### Request
 
 ```http
 POST /api/medical-record
 ```
 
-#### URL
-
-```text
-http://localhost:8001/api/medical-record
-```
-
-#### Header
-
-```http
-Content-Type: application/json
-```
-
-#### Body Request
+Contoh body:
 
 ```json
 {
@@ -121,7 +93,13 @@ Content-Type: application/json
 }
 ```
 
-#### Response Sukses
+Fungsi:
+
+```text
+Mengirim data rekam medis pasien dari RSUD Service ke E-KTP Service.
+```
+
+Contoh response sukses:
 
 ```json
 {
@@ -140,179 +118,81 @@ Content-Type: application/json
 }
 ```
 
-#### Alur Integrasi
+Alur integrasi:
 
+```text
 1. RSUD menerima data rekam medis pasien.
 2. RSUD memverifikasi NIK ke E-KTP Service.
 3. Jika NIK valid, data rekam medis dikirim ke E-KTP Service.
-4. E-KTP Service menyimpan data ke tabel `medical_records`.
-5. E-KTP Service mencatat aktivitas pada `audit_logs`.
+4. E-KTP Service menyimpan data ke tabel medical_records.
+5. E-KTP Service mencatat aktivitas pada audit_logs.
 6. Response sukses dikembalikan ke client.
+```
 
----
+## Struktur Database
 
-## Halaman Web
+Database yang digunakan:
 
-| Halaman     | URL                            | Keterangan                                      |
-| ----------- | ------------------------------ | ----------------------------------------------- |
-| Dashboard   | http://localhost:8001          | Ringkasan layanan RSUD                          |
-| Data Pasien | http://localhost:8001/patients | Menampilkan data pasien yang telah diregistrasi |
+```text
+db_rsud
+```
 
----
+Tabel utama:
+
+```text
+patients
+```
 
 ## Cara Menjalankan
 
-Pastikan:
-
-- MySQL Laragon aktif.
-- Database `db_rsud` telah dibuat dan diimport.
-- E-KTP Service sedang berjalan pada port `8000`.
-
-Masuk ke folder public:
+Jalankan perintah berikut dari terminal:
 
 ```bash
-cd rsud-service/public
-```
-
-Jalankan PHP Development Server:
-
-```bash
+cd D:\laragon\www\uas-nik-terdistribusi\rsud-service\public
 php -S localhost:8001
 ```
 
-Buka browser:
+Kemudian buka:
 
 ```text
 http://localhost:8001
 ```
 
----
+## Service yang Dibutuhkan
 
-## Cara Testing API
-
-API dapat diuji menggunakan Postman.
-
-### Registrasi Pasien
-
-**Request**
-
-```http
-POST http://localhost:8001/api/register-patient
-```
-
-**Body**
-
-```json
-{
-  "nik": "3302010202020002"
-}
-```
-
-### Verifikasi Hasil
-
-Jika registrasi berhasil, buka:
+Agar semua fitur RSUD berjalan penuh, service berikut perlu aktif:
 
 ```text
-http://localhost:8001/patients
+E-KTP Service  : localhost:8000
+Bansos Service : localhost:8003
+RSUD Service   : localhost:8001
 ```
 
-Data pasien yang baru diregistrasi akan tampil pada tabel data pasien.
+## Skenario Pengujian
 
----
-
-## Struktur Folder
-
-```text
-rsud-service/
-├── app/
-│   ├── config/
-│   │   ├── app.php
-│   │   └── database.php
-│   ├── controllers/
-│   │   └── PatientController.php
-│   ├── helpers/
-│   │   ├── http_client.php
-│   │   ├── request.php
-│   │   └── response.php
-│   └── routes/
-│       └── api.php
-├── database/
-│   └── db_rsud.sql
-├── public/
-│   ├── index.php
-│   └── assets/
-├── views/
-│   ├── dashboard.php
-│   ├── patients.php
-│   └── layout.php
-└── README.md
-```
-
----
-
-## Alur Integrasi
-
-1. Pengguna mengirim NIK melalui endpoint registrasi pasien.
-2. RSUD Service memanggil endpoint E-KTP Service:
-
-```http
-GET /api/verify-nik/{nik}
-```
-
-3. E-KTP Service melakukan validasi NIK.
-4. Jika NIK valid, data warga dikembalikan ke RSUD Service.
-5. RSUD Service menyimpan data sebagai pasien baru.
-6. Response sukses dikirim ke client.
-
----
-
-## Penanganan Error
-
-### NIK Tidak Ditemukan
-
-```json
-{
-  "success": false,
-  "message": "NIK tidak ditemukan."
-}
-```
-
-### E-KTP Service Tidak Dapat Diakses
-
-```json
-{
-  "success": false,
-  "message": "Gagal terhubung ke E-KTP Service."
-}
-```
-
----
-
-## Teknologi yang Digunakan
-
-- PHP Native
-- PDO (PHP Data Objects)
-- MySQL / MariaDB
-- REST API JSON
-- HTTP Client berbasis cURL
-
----
+1. Buka halaman registrasi pasien.
+2. Input NIK warga yang ada di E-KTP.
+3. Sistem menampilkan data warga dan tarif otomatis.
+4. Klik konfirmasi registrasi pasien.
+5. Cek data pasien.
+6. Buka halaman kirim rekam medis.
+7. Pilih pasien, isi diagnosis, tindakan, dan obat.
+8. Kirim rekam medis.
+9. Cek halaman rekam medis di E-KTP Service.
 
 ## Peran dalam Sistem Terdistribusi
 
-RSUD Service bertanggung jawab untuk:
+RSUD Service menunjukkan komunikasi antar-service karena melakukan request ke E-KTP Service dan Bansos Service sebelum menyimpan data pasien. RSUD juga mengirim data rekam medis ke E-KTP Service.
 
-- Registrasi pasien berbasis NIK.
-- Verifikasi identitas melalui E-KTP Service.
-- Penyimpanan data pasien.
-- Menyediakan data layanan kesehatan yang terintegrasi dengan sistem kependudukan.
+## Status Implementasi
 
-Dengan arsitektur ini, data pasien selalu mengacu pada sumber data kependudukan yang sama sehingga konsistensi data antar layanan dapat terjaga.
-
----
-
-## Author
-
-**Putra Aditya Priyono**
-UAS Komputasi Paralel dan Terdistribusi
-Program Studi Informatika
+| Fitur                      | Status  |
+| -------------------------- | ------- |
+| Dashboard                  | Selesai |
+| Registrasi pasien          | Selesai |
+| Tarif otomatis             | Selesai |
+| Data pasien                | Selesai |
+| Sinkron tarif              | Selesai |
+| Hapus pasien               | Selesai |
+| Form rekam medis           | Selesai |
+| Kirim rekam medis ke E-KTP | Selesai |
