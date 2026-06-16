@@ -11,6 +11,11 @@ if ($currentPath === '/patients') {
     $pageTitle = 'Data Pasien';
 }
 
+if ($currentPath === '/register-patient') {
+    $page = 'register_patient.php';
+    $pageTitle = 'Registrasi Pasien';
+}
+
 function isActiveMenu($path, $currentPath)
 {
     if ($path === '/' && $currentPath === '/') {
@@ -74,6 +79,11 @@ function isActiveMenu($path, $currentPath)
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/patients', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
                     Data Pasien
                 </a>
+
+                <a href="/register-patient"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/register-patient', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
+                    Registrasi Pasien
+                </a>
             </nav>
         </div>
 
@@ -100,6 +110,11 @@ function isActiveMenu($path, $currentPath)
                 <a href="/patients"
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/patients', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
                     Data Pasien
+                </a>
+
+                <a href="/register-patient"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/register-patient', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
+                    Registrasi Pasien
                 </a>
             </nav>
 
