@@ -16,6 +16,11 @@ if ($currentPath === '/register-patient') {
     $pageTitle = 'Registrasi Pasien';
 }
 
+if ($currentPath === '/medical-record') {
+    $page = 'medical_record_form.php';
+    $pageTitle = 'Kirim Rekam Medis';
+}
+
 function isActiveMenu($path, $currentPath)
 {
     if ($path === '/' && $currentPath === '/') {
@@ -84,6 +89,11 @@ function isActiveMenu($path, $currentPath)
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/register-patient', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
                     Registrasi Pasien
                 </a>
+
+                <a href="/medical-record"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/medical-record', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
+                    Kirim Rekam Medis
+                </a>
             </nav>
         </div>
 
@@ -116,6 +126,11 @@ function isActiveMenu($path, $currentPath)
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/register-patient', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
                     Registrasi Pasien
                 </a>
+
+                <a href="/medical-record"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/medical-record', $currentPath) ? 'bg-white text-emerald-950' : 'text-emerald-100/80 hover:bg-emerald-900 hover:text-white' ?>">
+                    Kirim Rekam Medis
+                </a>
             </nav>
 
             <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-emerald-800 bg-emerald-900 p-4">
@@ -126,7 +141,6 @@ function isActiveMenu($path, $currentPath)
 
         <!-- Main Content -->
         <main class="md:pl-64">
-            <!-- Header desktop -->
             <header class="hidden border-b border-emerald-100 bg-white px-6 py-4 md:block md:px-8">
                 <div class="flex items-center justify-between">
                     <div>
