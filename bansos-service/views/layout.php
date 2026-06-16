@@ -11,6 +11,11 @@ if ($currentPath === '/recipients') {
     $pageTitle = 'Data Penerima';
 }
 
+if ($currentPath === '/register-recipient') {
+    $page = 'register_recipient.php';
+    $pageTitle = 'Registrasi Penerima';
+}
+
 function isActiveMenu($path, $currentPath)
 {
     if ($path === '/' && $currentPath === '/') {
@@ -74,6 +79,11 @@ function isActiveMenu($path, $currentPath)
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/recipients', $currentPath) ? 'bg-amber-100 text-stone-950' : 'text-stone-300 hover:bg-stone-800 hover:text-white' ?>">
                     Data Penerima
                 </a>
+
+                <a href="/register-recipient"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/register-recipient', $currentPath) ? 'bg-amber-100 text-stone-950' : 'text-stone-300 hover:bg-stone-800 hover:text-white' ?>">
+                    Registrasi Penerima
+                </a>
             </nav>
         </div>
 
@@ -101,6 +111,11 @@ function isActiveMenu($path, $currentPath)
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/recipients', $currentPath) ? 'bg-amber-100 text-stone-950' : 'text-stone-300 hover:bg-stone-800 hover:text-white' ?>">
                     Data Penerima
                 </a>
+
+                <a href="/register-recipient"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/register-recipient', $currentPath) ? 'bg-amber-100 text-stone-950' : 'text-stone-300 hover:bg-stone-800 hover:text-white' ?>">
+                    Registrasi Penerima
+                </a>
             </nav>
 
             <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-stone-700 bg-stone-900 p-4">
@@ -111,7 +126,6 @@ function isActiveMenu($path, $currentPath)
 
         <!-- Main Content -->
         <main class="md:pl-64">
-            <!-- Header desktop -->
             <header class="hidden border-b border-amber-100 bg-white px-6 py-4 md:block md:px-8">
                 <div class="flex items-center justify-between">
                     <div>
