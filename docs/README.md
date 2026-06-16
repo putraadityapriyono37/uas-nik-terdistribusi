@@ -1,346 +1,179 @@
-# Dokumentasi Utama — Sistem Integrasi Layanan Publik Berbasis NIK
+# Sistem Layanan Publik Terdistribusi Berbasis NIK
 
-Project ini merupakan simulasi sistem layanan publik terdistribusi berbasis NIK. Sistem dibagi menjadi empat service terpisah yang berjalan pada port berbeda dan saling berkomunikasi menggunakan HTTP API.
+Project ini merupakan implementasi sistem layanan publik terdistribusi berbasis NIK yang terdiri dari empat service mandiri, yaitu E-KTP Service, RSUD Service, Bansos Service, dan SPBU Service. Setiap service berjalan pada port berbeda, memiliki database masing-masing, serta saling berkomunikasi menggunakan REST API berbasis HTTP.
 
-Project ini dibuat untuk tugas UAS Komputasi Paralel dan Terdistribusi.
+Project ini dibuat untuk memenuhi tugas UAS mata kuliah Komputasi Paralel dan Terdistribusi.
+
+---
 
 ## Anggota dan Pembagian Service
 
-| Nama    | Service        | Peran                                |
-| ------- | -------------- | ------------------------------------ |
-| Putra   | E-KTP Service  | Pusat data warga dan hub utama       |
-| Billy   | RSUD Service   | Registrasi pasien dan rekam medis    |
-| Anggita | Bansos Service | Registrasi penerima bantuan sosial   |
-| Nunu    | SPBU Service   | Transaksi BBM berbasis NIK dan kuota |
+| Nama    | Service        | Tanggung Jawab                                                      |
+| ------- | -------------- | ------------------------------------------------------------------- |
+| Putra   | E-KTP Service  | Pusat data warga, verifikasi NIK, audit log, rekam medis, kuota BBM |
+| Billy   | RSUD Service   | Registrasi pasien, tarif otomatis, pengiriman rekam medis           |
+| Anggita | Bansos Service | Registrasi penerima bantuan sosial dan status bansos                |
+| Nunu    | SPBU Service   | Transaksi BBM berbasis NIK dan update kuota BBM                     |
 
-## Tujuan Sistem
-
-Sistem ini dibuat untuk mensimulasikan integrasi antar layanan publik menggunakan NIK sebagai identitas utama warga.
-
-Setiap service memiliki database sendiri dan berjalan secara mandiri. Integrasi antar service dilakukan menggunakan HTTP API, sehingga sistem ini menggambarkan konsep dasar arsitektur terdistribusi.
+---
 
 ## Arsitektur Sistem
+
+Sistem ini menggunakan pendekatan microservice sederhana. Setiap service memiliki database sendiri dan berkomunikasi melalui endpoint API.
+
+```text
++------------------+          +------------------+
+|   RSUD Service   | -------> |   E-KTP Service  |
+| localhost:8001   |          | localhost:8000   |
++------------------+          +------------------+
+          |                            ^
+          |                            |
+          v                            |
++------------------+          +------------------+
+|  Bansos Service  | <------- |   SPBU Service   |
+| localhost:8003   |          | localhost:8002   |
++------------------+          +------------------+
+```
+
+---
+
+## Daftar Service
+
+| Service        | Port | Database  | Fungsi Utama                      |
+| -------------- | ---: | --------- | --------------------------------- |
+| E-KTP Service  | 8000 | db_ektp   | Pusat verifikasi identitas warga  |
+| RSUD Service   | 8001 | db_rsud   | Registrasi pasien dan rekam medis |
+| SPBU Service   | 8002 | db_spbu   | Transaksi BBM berbasis NIK        |
+| Bansos Service | 8003 | db_bansos | Data penerima bantuan sosial      |
+
+---
+
+## Teknologi yang Digunakan
+
+* PHP Native
+* MySQL / MariaDB
+* PDO
+* cURL
+* REST API
+* Tailwind CSS CDN
+* Laragon
+* Visual Studio Code
+* Git dan GitHub
+* Postman untuk pengujian API
+
+---
+
+## Struktur Folder
 
 ```text
 uas-nik-terdistribusi/
 ├── ektp-service/
+│   ├── app/
+│   ├── public/
+│   ├── views/
+│   ├── database/
+│   └── README.md
+│
 ├── rsud-service/
+│   ├── app/
+│   ├── public/
+│   ├── views/
+│   ├── database/
+│   └── README.md
+│
 ├── bansos-service/
+│   ├── app/
+│   ├── public/
+│   ├── views/
+│   ├── database/
+│   └── README.md
+│
 ├── spbu-service/
+│   ├── app/
+│   ├── public/
+│   ├── views/
+│   ├── database/
+│   └── README.md
+│
 └── docs/
+    └── README.md
 ```
 
-Setiap service memiliki struktur internal yang relatif sama:
+---
 
-```text
-service-name/
-├── app/
-│   ├── config/
-│   ├── controllers/
-│   ├── helpers/
-│   └── routes/
-├── database/
-├── public/
-├── views/
-└── README.md
+# 1. E-KTP Service
+
+## Informasi Service
+
+| Item     | Keterangan                         |
+| -------- | ---------------------------------- |
+| Port     | localhost:8000                     |
+| Database | db_ektp                            |
+| Peran    | Pusat data warga dan integrasi NIK |
+
+## Fitur
+
+* Dashboard E-KTP
+* CRUD data warga
+* Tambah data warga
+* Edit data warga
+* Nonaktifkan / aktifkan warga
+* Verifikasi NIK
+* Cek status warga
+* Menerima rekam medis dari RSUD
+* Update kuota BBM dari SPBU
+* Audit log integrasi antar-service
+
+## Endpoint API
+
+### Verifikasi NIK
+
+```http
+GET /api/verify-nik/{nik}
 ```
 
-## Daftar Service
-
-| Service        | Port             | Database    | Fungsi Utama                                                           |
-| -------------- | ---------------- | ----------- | ---------------------------------------------------------------------- |
-| E-KTP Service  | `localhost:8000` | `db_ektp`   | Pusat data warga, verifikasi NIK, status warga, rekam medis, kuota BBM |
-| RSUD Service   | `localhost:8001` | `db_rsud`   | Registrasi pasien dan pengiriman rekam medis ke E-KTP                  |
-| SPBU Service   | `localhost:8002` | `db_spbu`   | Transaksi BBM, cek bansos, dan update kuota BBM                        |
-| Bansos Service | `localhost:8003` | `db_bansos` | Registrasi penerima bansos dan pengecekan status bansos                |
-
-## Diagram Integrasi
+Contoh:
 
 ```text
-                         ┌──────────────────────────┐
-                         │      E-KTP Service        │
-                         │      localhost:8000       │
-                         │      Database: db_ektp    │
-                         └─────────────┬────────────┘
-                                       │
-              ┌────────────────────────┼────────────────────────┐
-              │                        │                        │
-              ▼                        ▼                        ▼
-┌────────────────────────┐  ┌────────────────────────┐  ┌────────────────────────┐
-│      RSUD Service       │  │     Bansos Service      │  │      SPBU Service       │
-│      localhost:8001     │  │     localhost:8003      │  │      localhost:8002     │
-│      Database: db_rsud  │  │     Database: db_bansos │  │      Database: db_spbu  │
-└────────────────────────┘  └─────────────┬──────────┘  └─────────────┬──────────┘
-                                          │                           │
-                                          └─────────── dipanggil ─────┘
-                                               oleh SPBU Service
+http://localhost:8000/api/verify-nik/3302010101010001
 ```
 
-## Alur Komunikasi Antar Service
+Fungsi endpoint ini adalah memverifikasi apakah NIK terdaftar dan aktif di database E-KTP.
 
-### 1. RSUD ke E-KTP
+---
 
-RSUD memanggil E-KTP untuk memverifikasi NIK pasien.
+### Cek Status Warga
 
-```text
-RSUD Service → E-KTP Service
-POST /api/register-patient
-GET  /api/verify-nik/{nik}
+```http
+GET /api/citizen-status/{nik}
 ```
 
-Alur:
+Contoh:
 
 ```text
-1. User mengirim NIK ke RSUD.
-2. RSUD memanggil E-KTP untuk verifikasi NIK.
-3. Jika NIK valid, data warga disimpan sebagai pasien RSUD.
+http://localhost:8000/api/citizen-status/3302010101010001
 ```
 
-### 2. RSUD Mengirim Rekam Medis ke E-KTP
+Endpoint ini digunakan oleh RSUD, Bansos, dan SPBU untuk membaca status ekonomi, status aktif, dan kuota BBM warga.
 
-RSUD mengirim data rekam medis pasien ke E-KTP.
+---
 
-```text
-RSUD Service → E-KTP Service
+### Simpan Rekam Medis
+
+```http
 POST /api/medical-record
 ```
 
-Alur:
+Contoh:
 
 ```text
-1. RSUD menerima data rekam medis.
-2. RSUD memverifikasi NIK ke E-KTP.
-3. Jika valid, RSUD mengirim data rekam medis ke E-KTP.
-4. E-KTP menyimpan data pada tabel medical_records.
+http://localhost:8000/api/medical-record
 ```
 
-### 3. Bansos ke E-KTP
-
-Bansos memanggil E-KTP untuk mengecek status ekonomi warga.
+Header:
 
 ```text
-Bansos Service → E-KTP Service
-GET /api/citizen-status/{nik}
-```
-
-Alur:
-
-```text
-1. User mengirim NIK ke Bansos.
-2. Bansos memanggil E-KTP untuk mengecek status ekonomi.
-3. Jika status ekonomi kurang_mampu atau rentan, warga dapat didaftarkan sebagai penerima bansos.
-```
-
-### 4. SPBU ke E-KTP dan Bansos
-
-SPBU memanggil E-KTP dan Bansos dalam satu proses transaksi BBM.
-
-```text
-SPBU Service → E-KTP Service
-GET /api/citizen-status/{nik}
-
-SPBU Service → Bansos Service
-GET /api/bansos-status/{nik}
-
-SPBU Service → E-KTP Service
-PUT /api/bbm-quota/{nik}
-```
-
-Alur:
-
-```text
-1. User melakukan transaksi BBM menggunakan NIK.
-2. SPBU mengecek status warga dan kuota BBM ke E-KTP.
-3. SPBU mengecek status bansos ke Bansos.
-4. SPBU menentukan harga BBM berdasarkan status ekonomi dan status bansos.
-5. SPBU mengurangi kuota BBM.
-6. SPBU mengirim update kuota BBM ke E-KTP.
-7. Transaksi disimpan di database SPBU.
-```
-
-## Endpoint Utama
-
-### E-KTP Service
-
-Base URL:
-
-```text
-http://localhost:8000
-```
-
-| Method | Endpoint                    | Fungsi                                 |
-| ------ | --------------------------- | -------------------------------------- |
-| GET    | `/api/verify-nik/{nik}`     | Verifikasi NIK warga                   |
-| GET    | `/api/citizen-status/{nik}` | Cek status ekonomi dan kuota BBM warga |
-| POST   | `/api/medical-record`       | Menerima rekam medis dari RSUD         |
-| PUT    | `/api/bbm-quota/{nik}`      | Update kuota BBM dari SPBU             |
-
-### RSUD Service
-
-Base URL:
-
-```text
-http://localhost:8001
-```
-
-| Method | Endpoint                | Fungsi                            |
-| ------ | ----------------------- | --------------------------------- |
-| POST   | `/api/register-patient` | Registrasi pasien berdasarkan NIK |
-| POST   | `/api/medical-record`   | Mengirim rekam medis ke E-KTP     |
-
-### SPBU Service
-
-Base URL:
-
-```text
-http://localhost:8002
-```
-
-| Method | Endpoint                | Fungsi                               |
-| ------ | ----------------------- | ------------------------------------ |
-| POST   | `/api/fuel-transaction` | Memproses transaksi BBM berbasis NIK |
-
-### Bansos Service
-
-Base URL:
-
-```text
-http://localhost:8003
-```
-
-| Method | Endpoint                   | Fungsi                     |
-| ------ | -------------------------- | -------------------------- |
-| POST   | `/api/register-recipient`  | Registrasi penerima bansos |
-| GET    | `/api/bansos-status/{nik}` | Cek status penerima bansos |
-
-## Halaman Web
-
-### E-KTP Service
-
-| Halaman     | URL                                     | Keterangan                          |
-| ----------- | --------------------------------------- | ----------------------------------- |
-| Dashboard   | `http://localhost:8000`                 | Ringkasan layanan E-KTP             |
-| Data Warga  | `http://localhost:8000/citizens`        | Data master warga                   |
-| Rekam Medis | `http://localhost:8000/medical-records` | Data rekam medis dari RSUD          |
-| Audit Log   | `http://localhost:8000/audit-logs`      | Riwayat request yang masuk ke E-KTP |
-
-### RSUD Service
-
-| Halaman     | URL                              | Keterangan                          |
-| ----------- | -------------------------------- | ----------------------------------- |
-| Dashboard   | `http://localhost:8001`          | Ringkasan layanan RSUD              |
-| Data Pasien | `http://localhost:8001/patients` | Data pasien yang telah diregistrasi |
-
-### SPBU Service
-
-| Halaman        | URL                                  | Keterangan             |
-| -------------- | ------------------------------------ | ---------------------- |
-| Dashboard      | `http://localhost:8002`              | Ringkasan layanan SPBU |
-| Data Transaksi | `http://localhost:8002/transactions` | Data transaksi BBM     |
-
-### Bansos Service
-
-| Halaman       | URL                                | Keterangan                   |
-| ------------- | ---------------------------------- | ---------------------------- |
-| Dashboard     | `http://localhost:8003`            | Ringkasan layanan Bansos     |
-| Data Penerima | `http://localhost:8003/recipients` | Data penerima bantuan sosial |
-
-## Teknologi yang Digunakan
-
-| Kebutuhan         | Teknologi               |
-| ----------------- | ----------------------- |
-| Backend           | PHP Native              |
-| Database          | MySQL / MariaDB         |
-| UI                | HTML + Tailwind CSS CDN |
-| HTTP Client       | cURL                    |
-| Format API        | JSON                    |
-| Database Access   | PDO                     |
-| Testing API       | Postman                 |
-| Version Control   | Git dan GitHub          |
-| Local Development | Laragon dan VSCode      |
-
-## Cara Menjalankan Project
-
-Pastikan Laragon sudah aktif, terutama service MySQL.
-
-### 1. Jalankan E-KTP Service
-
-```bash
-cd ektp-service/public
-php -S localhost:8000
-```
-
-### 2. Jalankan RSUD Service
-
-```bash
-cd rsud-service/public
-php -S localhost:8001
-```
-
-### 3. Jalankan SPBU Service
-
-```bash
-cd spbu-service/public
-php -S localhost:8002
-```
-
-### 4. Jalankan Bansos Service
-
-```bash
-cd bansos-service/public
-php -S localhost:8003
-```
-
-Semua service harus dijalankan pada terminal yang berbeda.
-
-## Cara Import Database
-
-Setiap service memiliki file SQL masing-masing di folder `database`.
-
-| Service | File SQL                                | Database    |
-| ------- | --------------------------------------- | ----------- |
-| E-KTP   | `ektp-service/database/db_ektp.sql`     | `db_ektp`   |
-| RSUD    | `rsud-service/database/db_rsud.sql`     | `db_rsud`   |
-| SPBU    | `spbu-service/database/db_spbu.sql`     | `db_spbu`   |
-| Bansos  | `bansos-service/database/db_bansos.sql` | `db_bansos` |
-
-Langkah umum:
-
-```text
-1. Buka phpMyAdmin.
-2. Buat database sesuai nama service.
-3. Pilih database.
-4. Masuk ke tab Import.
-5. Pilih file SQL dari folder database.
-6. Klik Go / Kirim.
-```
-
-## Contoh Testing API Menggunakan Postman
-
-### 1. Verifikasi NIK E-KTP
-
-```http
-GET http://localhost:8000/api/verify-nik/3302010101010001
-```
-
-### 2. Registrasi Pasien RSUD
-
-```http
-POST http://localhost:8001/api/register-patient
-```
-
-Body:
-
-```json
-{
-  "nik": "3302010101010001"
-}
-```
-
-### 3. Kirim Rekam Medis dari RSUD ke E-KTP
-
-```http
-POST http://localhost:8001/api/medical-record
+Content-Type: application/json
 ```
 
 Body:
@@ -351,14 +184,212 @@ Body:
   "diagnosis": "Demam tinggi",
   "tindakan": "Pemeriksaan suhu dan tekanan darah",
   "obat": "Paracetamol 500mg",
-  "tanggal_periksa": "2026-06-10"
+  "rumah_sakit": "RSUD Service",
+  "tanggal_periksa": "2026-06-16"
 }
 ```
 
-### 4. Registrasi Penerima Bansos
+Endpoint ini digunakan oleh RSUD Service untuk mengirim riwayat medis pasien ke E-KTP Service.
+
+---
+
+### Update Kuota BBM
 
 ```http
-POST http://localhost:8003/api/register-recipient
+PUT /api/bbm-quota/{nik}
+```
+
+Contoh:
+
+```text
+http://localhost:8000/api/bbm-quota/3302010101010001
+```
+
+Header:
+
+```text
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "kuota_bbm": 25
+}
+```
+
+Endpoint ini digunakan oleh SPBU Service untuk memperbarui sisa kuota BBM setelah transaksi.
+
+---
+
+## Halaman Web
+
+| Halaman      | URL                                   |
+| ------------ | ------------------------------------- |
+| Dashboard    | http://localhost:8000                 |
+| Data Warga   | http://localhost:8000/citizens        |
+| Tambah Warga | http://localhost:8000/citizens/create |
+| Rekam Medis  | http://localhost:8000/medical-records |
+| Audit Log    | http://localhost:8000/audit-logs      |
+
+---
+
+# 2. RSUD Service
+
+## Informasi Service
+
+| Item     | Keterangan                                   |
+| -------- | -------------------------------------------- |
+| Port     | localhost:8001                               |
+| Database | db_rsud                                      |
+| Peran    | Registrasi pasien dan pengiriman rekam medis |
+
+## Fitur
+
+* Dashboard RSUD
+* Data pasien
+* Registrasi pasien berbasis NIK
+* Verifikasi NIK ke E-KTP Service
+* Cek status bansos ke Bansos Service
+* Logika tarif otomatis
+* Hapus data pasien
+* Sinkronisasi ulang tarif pasien
+* Form rekam medis digital
+* Kirim rekam medis ke E-KTP Service
+
+## Logika Tarif Otomatis
+
+| Kondisi                              | Jenis Pasien | Tarif        |
+| ------------------------------------ | ------------ | ------------ |
+| Penerima bansos aktif                | bansos       | GRATIS       |
+| Status ekonomi kurang mampu / rentan | kurang_mampu | Diskon 20%   |
+| Warga umum                           | umum         | Tarif Normal |
+
+## Endpoint API
+
+### Registrasi Pasien
+
+```http
+POST /api/register-patient
+```
+
+Contoh:
+
+```text
+http://localhost:8001/api/register-patient
+```
+
+Header:
+
+```text
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "nik": "3302010101010001"
+}
+```
+
+Endpoint ini digunakan untuk registrasi pasien berdasarkan data warga yang diverifikasi dari E-KTP Service.
+
+---
+
+### Kirim Rekam Medis
+
+```http
+POST /api/medical-record
+```
+
+Contoh:
+
+```text
+http://localhost:8001/api/medical-record
+```
+
+Header:
+
+```text
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "nik": "3302010101010001",
+  "diagnosis": "Demam tinggi",
+  "tindakan": "Pemeriksaan fisik",
+  "obat": "Paracetamol",
+  "tanggal_periksa": "2026-06-16"
+}
+```
+
+Endpoint ini digunakan untuk mengirim data rekam medis pasien dari RSUD Service ke E-KTP Service.
+
+---
+
+## Halaman Web
+
+| Halaman           | URL                                    |
+| ----------------- | -------------------------------------- |
+| Dashboard         | http://localhost:8001                  |
+| Data Pasien       | http://localhost:8001/patients         |
+| Registrasi Pasien | http://localhost:8001/register-patient |
+| Kirim Rekam Medis | http://localhost:8001/medical-record   |
+
+---
+
+# 3. Bansos Service
+
+## Informasi Service
+
+| Item     | Keterangan                          |
+| -------- | ----------------------------------- |
+| Port     | localhost:8003                      |
+| Database | db_bansos                           |
+| Peran    | Pengelolaan penerima bantuan sosial |
+
+## Fitur
+
+* Dashboard Bansos
+* Registrasi penerima bansos
+* Validasi status ekonomi ke E-KTP Service
+* Data penerima bansos
+* Aktifkan penerima
+* Nonaktifkan penerima
+* Hapus penerima
+* Endpoint status bansos untuk RSUD dan SPBU
+
+## Aturan Kelayakan
+
+| Status Ekonomi dari E-KTP | Kelayakan                   |
+| ------------------------- | --------------------------- |
+| kurang_mampu              | Layak menerima bansos       |
+| rentan                    | Layak menerima bansos       |
+| mampu                     | Tidak layak menerima bansos |
+
+## Endpoint API
+
+### Registrasi Penerima Bansos
+
+```http
+POST /api/register-recipient
+```
+
+Contoh:
+
+```text
+http://localhost:8003/api/register-recipient
+```
+
+Header:
+
+```text
+Content-Type: application/json
 ```
 
 Body:
@@ -366,22 +397,92 @@ Body:
 ```json
 {
   "nik": "3302010202020002",
-  "jenis_bantuan": "Bantuan Sembako",
-  "periode_bantuan": "2026",
-  "keterangan": "Penerima bantuan berdasarkan status ekonomi kurang mampu"
+  "jenis_bantuan": "Bantuan Sosial Pokok"
 }
 ```
 
-### 5. Cek Status Bansos
+Endpoint ini digunakan untuk mendaftarkan warga sebagai penerima bansos setelah divalidasi status ekonominya ke E-KTP Service.
+
+---
+
+### Cek Status Bansos
 
 ```http
-GET http://localhost:8003/api/bansos-status/3302010202020002
+GET /api/bansos-status/{nik}
 ```
 
-### 6. Transaksi BBM SPBU
+Contoh:
+
+```text
+http://localhost:8003/api/bansos-status/3302010202020002
+```
+
+Endpoint ini digunakan oleh RSUD dan SPBU untuk mengetahui apakah seorang warga merupakan penerima bansos aktif.
+
+---
+
+## Halaman Web
+
+| Halaman             | URL                                      |
+| ------------------- | ---------------------------------------- |
+| Dashboard           | http://localhost:8003                    |
+| Data Penerima       | http://localhost:8003/recipients         |
+| Registrasi Penerima | http://localhost:8003/register-recipient |
+
+---
+
+# 4. SPBU Service
+
+## Informasi Service
+
+| Item     | Keterangan                 |
+| -------- | -------------------------- |
+| Port     | localhost:8002             |
+| Database | db_spbu                    |
+| Peran    | Transaksi BBM berbasis NIK |
+
+## Fitur
+
+* Dashboard SPBU
+* Transaksi BBM berbasis NIK
+* Cek status warga ke E-KTP Service
+* Cek status bansos ke Bansos Service
+* Hitung harga BBM otomatis
+* Update kuota BBM ke E-KTP Service
+* Data transaksi BBM
+* Edit keterangan transaksi
+* Hapus riwayat transaksi lokal
+
+## Logika Harga BBM
+
+| Kondisi                              | Harga per Liter |
+| ------------------------------------ | --------------: |
+| Penerima bansos aktif                |        Rp 9.000 |
+| Status ekonomi kurang mampu / rentan |       Rp 10.000 |
+| Warga umum                           |       Rp 13.000 |
+
+## Catatan CRUD Transaksi
+
+Pada SPBU Service, fitur update hanya digunakan untuk mengubah keterangan transaksi. Fitur hapus hanya menghapus riwayat transaksi lokal pada SPBU Service dan tidak mengembalikan kuota BBM di E-KTP Service. Hal ini dilakukan agar data kuota tetap konsisten.
+
+## Endpoint API
+
+### Transaksi BBM
 
 ```http
-POST http://localhost:8002/api/fuel-transaction
+POST /api/fuel-transaction
+```
+
+Contoh:
+
+```text
+http://localhost:8002/api/fuel-transaction
+```
+
+Header:
+
+```text
+Content-Type: application/json
 ```
 
 Body:
@@ -390,81 +491,330 @@ Body:
 {
   "nik": "3302010202020002",
   "jenis_bbm": "Pertalite",
-  "jumlah_liter": 5
+  "jumlah_liter": 5,
+  "keterangan": "Transaksi loket 1"
 }
 ```
 
-## Skenario Demo Integrasi
-
-Skenario demo yang disarankan saat presentasi:
+Alur endpoint:
 
 ```text
-1. Jalankan semua service pada port 8000, 8001, 8002, dan 8003.
-2. Buka dashboard E-KTP, RSUD, Bansos, dan SPBU.
-3. Tes verifikasi NIK melalui E-KTP.
-4. Registrasikan pasien melalui RSUD.
-5. Kirim rekam medis melalui RSUD dan cek hasilnya di E-KTP.
-6. Registrasikan penerima bansos melalui Bansos.
-7. Lakukan transaksi BBM melalui SPBU.
-8. Cek kuota BBM di E-KTP.
-9. Cek audit log E-KTP untuk melihat riwayat request antar service.
+1. SPBU menerima input NIK dan jumlah liter.
+2. SPBU memanggil E-KTP Service untuk mengecek status warga dan kuota BBM.
+3. SPBU memanggil Bansos Service untuk mengecek status bansos.
+4. SPBU menghitung harga BBM otomatis.
+5. SPBU mengirim update kuota ke E-KTP Service.
+6. SPBU menyimpan transaksi ke database lokal db_spbu.
 ```
 
-## Bukti Konsep Komputasi Terdistribusi
+---
+
+## Halaman Web
+
+| Halaman        | URL                                    |
+| -------------- | -------------------------------------- |
+| Dashboard      | http://localhost:8002                  |
+| Data Transaksi | http://localhost:8002/transactions     |
+| Transaksi BBM  | http://localhost:8002/fuel-transaction |
+
+---
+
+# Cara Menjalankan Project
+
+Pastikan Laragon, MySQL, dan PHP sudah aktif.
+
+Buka 4 terminal berbeda.
+
+## Jalankan E-KTP Service
+
+```bash
+cd D:\laragon\www\uas-nik-terdistribusi\ektp-service\public
+php -S localhost:8000
+```
+
+## Jalankan RSUD Service
+
+```bash
+cd D:\laragon\www\uas-nik-terdistribusi\rsud-service\public
+php -S localhost:8001
+```
+
+## Jalankan SPBU Service
+
+```bash
+cd D:\laragon\www\uas-nik-terdistribusi\spbu-service\public
+php -S localhost:8002
+```
+
+## Jalankan Bansos Service
+
+```bash
+cd D:\laragon\www\uas-nik-terdistribusi\bansos-service\public
+php -S localhost:8003
+```
+
+---
+
+# Database
+
+Project ini menggunakan empat database terpisah:
+
+```text
+db_ektp
+db_rsud
+db_spbu
+db_bansos
+```
+
+Setiap database berada pada service masing-masing. File SQL berada di folder `database` pada setiap service.
+
+Contoh:
+
+```text
+ektp-service/database/db_ektp.sql
+rsud-service/database/db_rsud.sql
+spbu-service/database/db_spbu.sql
+bansos-service/database/db_bansos.sql
+```
+
+Import file SQL melalui phpMyAdmin atau MySQL client sebelum menjalankan service.
+
+---
+
+# Skenario Testing End-to-End
+
+## Skenario 1: Tambah Warga di E-KTP
+
+1. Buka:
+
+```text
+http://localhost:8000/citizens/create
+```
+
+2. Tambahkan warga baru dengan status ekonomi `kurang_mampu` atau `rentan`.
+3. Pastikan data muncul di:
+
+```text
+http://localhost:8000/citizens
+```
+
+---
+
+## Skenario 2: Registrasi Penerima Bansos
+
+1. Buka:
+
+```text
+http://localhost:8003/register-recipient
+```
+
+2. Input NIK warga yang status ekonominya `kurang_mampu` atau `rentan`.
+3. Klik cek kelayakan.
+4. Klik konfirmasi registrasi penerima.
+5. Pastikan data muncul di:
+
+```text
+http://localhost:8003/recipients
+```
+
+---
+
+## Skenario 3: Registrasi Pasien RSUD
+
+1. Buka:
+
+```text
+http://localhost:8001/register-patient
+```
+
+2. Input NIK warga.
+3. Sistem mengambil data dari E-KTP dan mengecek status bansos.
+4. Sistem menampilkan tarif otomatis.
+5. Klik konfirmasi registrasi pasien.
+6. Pastikan data muncul di:
+
+```text
+http://localhost:8001/patients
+```
+
+Hasil yang diharapkan:
+
+```text
+Jika bansos aktif     → GRATIS
+Jika kurang mampu     → Diskon 20%
+Jika warga umum       → Tarif Normal
+```
+
+---
+
+## Skenario 4: Kirim Rekam Medis RSUD ke E-KTP
+
+1. Buka:
+
+```text
+http://localhost:8001/medical-record
+```
+
+2. Pilih pasien.
+3. Isi diagnosis, tindakan, dan obat.
+4. Klik kirim rekam medis.
+5. Buka:
+
+```text
+http://localhost:8000/medical-records
+```
+
+6. Pastikan data rekam medis muncul pada E-KTP Service.
+
+---
+
+## Skenario 5: Transaksi BBM SPBU
+
+1. Buka:
+
+```text
+http://localhost:8002/fuel-transaction
+```
+
+2. Input NIK warga.
+3. Input jenis BBM dan jumlah liter.
+4. Klik cek transaksi.
+5. Sistem mengecek:
+
+   * status warga dari E-KTP,
+   * status bansos dari Bansos,
+   * kuota BBM dari E-KTP.
+6. Klik konfirmasi transaksi.
+7. Buka:
+
+```text
+http://localhost:8002/transactions
+```
+
+8. Pastikan transaksi tersimpan.
+9. Buka:
+
+```text
+http://localhost:8000/citizens
+```
+
+10. Pastikan kuota BBM warga berkurang.
+
+---
+
+# Bukti Konsep Komputasi Terdistribusi
 
 Project ini memenuhi konsep sistem terdistribusi karena:
 
-```text
-1. Terdapat empat service yang berjalan secara terpisah.
+1. Terdiri dari beberapa service yang berjalan secara terpisah.
 2. Setiap service memiliki database sendiri.
-3. Setiap service berjalan pada port berbeda.
-4. Integrasi dilakukan melalui HTTP API.
-5. Service dapat saling memanggil untuk menyelesaikan proses bisnis.
-6. Jika salah satu service mati, proses integrasi yang bergantung pada service tersebut akan gagal dan menghasilkan error handling.
-```
+3. Service berkomunikasi menggunakan REST API.
+4. Setiap service memiliki tanggung jawab berbeda.
+5. Kegagalan satu service dapat memengaruhi proses integrasi service lain.
+6. Data dipertukarkan melalui jaringan lokal menggunakan HTTP.
+7. Sistem mendukung integrasi lintas layanan seperti RSUD ke E-KTP, SPBU ke E-KTP, dan SPBU ke Bansos.
 
-## Bukti Konsep Komputasi Paralel
+---
 
-Project ini juga dapat menunjukkan konsep paralel secara sederhana karena:
+# Alur Integrasi Utama
 
-```text
-1. Empat service dapat berjalan bersamaan pada empat terminal berbeda.
-2. Setiap service dapat menerima request secara mandiri.
-3. SPBU melakukan proses transaksi dengan memanggil lebih dari satu service dalam satu alur.
-4. Testing dapat dilakukan dengan beberapa request API menggunakan Postman.
-```
-
-## Error Handling
-
-Beberapa kondisi error yang sudah ditangani:
-
-| Kondisi                              | Response                                                  |
-| ------------------------------------ | --------------------------------------------------------- |
-| Format NIK tidak 16 digit            | Request ditolak                                           |
-| NIK tidak ditemukan                  | Response gagal dengan status tidak ditemukan              |
-| Service tujuan mati                  | Response gagal dengan pesan service tidak dapat dihubungi |
-| Kuota BBM tidak cukup                | Transaksi SPBU ditolak                                    |
-| Warga tidak memenuhi kriteria bansos | Registrasi bansos ditolak                                 |
-| Body request bukan JSON              | Request ditolak                                           |
-
-## Catatan Pengembangan
-
-Saat ini input data utama dilakukan menggunakan Postman. Halaman web berfungsi sebagai dashboard dan monitoring data.
-
-Tahap pengembangan berikutnya adalah membuat interaksi web yang lebih dinamis, seperti:
+## RSUD ke E-KTP
 
 ```text
-1. Form registrasi pasien di RSUD.
-2. Form pengiriman rekam medis di RSUD.
-3. Form registrasi penerima bansos.
-4. Form transaksi BBM di SPBU.
-5. Tombol submit dari halaman web yang langsung memanggil endpoint API masing-masing service.
+RSUD input NIK
+→ RSUD call E-KTP /api/verify-nik/{nik}
+→ RSUD menyimpan pasien
 ```
 
-Dengan pengembangan tersebut, sistem tidak hanya dapat diuji melalui Postman, tetapi juga dapat digunakan langsung melalui tampilan web.
+## RSUD ke Bansos
 
-## Kesimpulan
+```text
+RSUD input NIK
+→ RSUD call Bansos /api/bansos-status/{nik}
+→ RSUD menentukan tarif otomatis
+```
 
-Sistem Integrasi Layanan Publik Berbasis NIK ini merupakan simulasi sistem terdistribusi yang terdiri dari E-KTP, RSUD, Bansos, dan SPBU. Setiap service berjalan mandiri, memiliki database sendiri, dan saling berkomunikasi menggunakan HTTP API.
+## RSUD Kirim Rekam Medis ke E-KTP
 
-Project ini menunjukkan bagaimana beberapa layanan publik dapat terintegrasi menggunakan NIK sebagai identitas utama warga.
+```text
+RSUD input rekam medis
+→ RSUD call E-KTP /api/medical-record
+→ E-KTP menyimpan riwayat medis
+```
+
+## Bansos ke E-KTP
+
+```text
+Bansos input NIK
+→ Bansos call E-KTP /api/citizen-status/{nik}
+→ Bansos menentukan kelayakan penerima
+```
+
+## SPBU ke E-KTP dan Bansos
+
+```text
+SPBU input transaksi
+→ SPBU call E-KTP /api/citizen-status/{nik}
+→ SPBU call Bansos /api/bansos-status/{nik}
+→ SPBU hitung harga otomatis
+→ SPBU call E-KTP /api/bbm-quota/{nik}
+→ SPBU simpan transaksi lokal
+```
+
+---
+
+# Penanganan Error
+
+Sistem menangani beberapa kondisi error berikut:
+
+| Kondisi                         | Respons Sistem                              |
+| ------------------------------- | ------------------------------------------- |
+| NIK tidak valid                 | Menampilkan pesan format NIK harus 16 digit |
+| NIK tidak ditemukan             | Menampilkan pesan NIK tidak tersedia        |
+| Warga nonaktif                  | Proses verifikasi ditolak                   |
+| Service tujuan mati             | Menampilkan pesan gagal menghubungi service |
+| Kuota BBM tidak cukup           | Transaksi BBM ditolak                       |
+| Pasien sudah terdaftar          | Registrasi pasien ditolak                   |
+| Penerima bansos sudah terdaftar | Registrasi bansos ditolak                   |
+
+---
+
+# Status Implementasi
+
+| Modul                     | Status  |
+| ------------------------- | ------- |
+| E-KTP Service             | Selesai |
+| RSUD Service              | Selesai |
+| Bansos Service            | Selesai |
+| SPBU Service              | Selesai |
+| Integrasi antar-service   | Selesai |
+| UI responsif              | Selesai |
+| CRUD dasar setiap service | Selesai |
+| Testing end-to-end        | Selesai |
+
+---
+
+# Pengembangan Lanjutan
+
+Beberapa fitur yang dapat dikembangkan selanjutnya:
+
+* Login operator
+* Role admin per service
+* API key antar-service
+* Export laporan PDF / Excel
+* Grafik dashboard
+* Pagination tabel
+* Search dan filter data
+* Deployment server
+* Docker Compose
+* Unit testing dan integration testing otomatis
+* Scheduler reset kuota BBM bulanan
+* Soft delete untuk semua data transaksi penting
+
+---
+
+# Kesimpulan
+
+Project ini berhasil mengimplementasikan sistem layanan publik terdistribusi berbasis NIK dengan empat service mandiri. E-KTP Service berperan sebagai pusat data warga, RSUD Service mengelola registrasi pasien dan rekam medis, Bansos Service mengelola penerima bantuan sosial, sedangkan SPBU Service mengelola transaksi BBM berbasis NIK.
+
+Setiap service berjalan pada port berbeda, memiliki database sendiri, serta saling terhubung melalui REST API. Dengan demikian, project ini menunjukkan implementasi dasar sistem terdistribusi yang fungsional, terintegrasi, dan dapat didemonstrasikan secara end-to-end.
