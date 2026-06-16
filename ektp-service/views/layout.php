@@ -11,6 +11,16 @@ if ($currentPath === '/citizens') {
     $pageTitle = 'Data Warga';
 }
 
+if ($currentPath === '/citizens/create') {
+    $page = 'citizen_form.php';
+    $pageTitle = 'Tambah Warga';
+}
+
+if ($currentPath === '/citizens/edit') {
+    $page = 'citizen_form.php';
+    $pageTitle = 'Edit Warga';
+}
+
 if ($currentPath === '/medical-records') {
     $page = 'medical_records.php';
     $pageTitle = 'Rekam Medis';
@@ -35,8 +45,13 @@ function isActiveMenu($path, $currentPath)
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+
+    <!-- Responsif untuk mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title><?= htmlspecialchars($pageTitle) ?> - <?= htmlspecialchars($app['name']) ?></title>
+
+    <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -55,6 +70,7 @@ function isActiveMenu($path, $currentPath)
                     </h1>
                 </div>
 
+                <!-- Tombol hamburger mobile -->
                 <button
                     type="button"
                     onclick="toggleMobileMenu()"
@@ -75,8 +91,13 @@ function isActiveMenu($path, $currentPath)
                 </a>
 
                 <a href="/citizens"
-                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens', $currentPath) ? 'bg-white text-slate-950' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens', $currentPath) && $currentPath !== '/citizens/create' ? 'bg-white text-slate-950' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
                     Data Warga
+                </a>
+
+                <a href="/citizens/create"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens/create', $currentPath) ? 'bg-white text-slate-950' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
+                    Tambah Warga
                 </a>
 
                 <a href="/medical-records"
@@ -112,8 +133,13 @@ function isActiveMenu($path, $currentPath)
                 </a>
 
                 <a href="/citizens"
-                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens', $currentPath) ? 'bg-white text-slate-950' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens', $currentPath) && $currentPath !== '/citizens/create' ? 'bg-white text-slate-950' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
                     Data Warga
+                </a>
+
+                <a href="/citizens/create"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/citizens/create', $currentPath) ? 'bg-white text-slate-950' : 'text-slate-300 hover:bg-slate-800 hover:text-white' ?>">
+                    Tambah Warga
                 </a>
 
                 <a href="/medical-records"
@@ -156,6 +182,7 @@ function isActiveMenu($path, $currentPath)
         </main>
     </div>
 
+    <!-- Toggle hamburger menu -->
     <script>
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
