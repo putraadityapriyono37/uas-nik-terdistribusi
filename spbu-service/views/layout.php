@@ -11,6 +11,11 @@ if ($currentPath === '/transactions') {
     $pageTitle = 'Data Transaksi';
 }
 
+if ($currentPath === '/fuel-transaction') {
+    $page = 'fuel_transaction_form.php';
+    $pageTitle = 'Transaksi BBM';
+}
+
 function isActiveMenu($path, $currentPath)
 {
     if ($path === '/' && $currentPath === '/') {
@@ -74,6 +79,11 @@ function isActiveMenu($path, $currentPath)
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/transactions', $currentPath) ? 'bg-white text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white' ?>">
                     Data Transaksi
                 </a>
+
+                <a href="/fuel-transaction"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/fuel-transaction', $currentPath) ? 'bg-white text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white' ?>">
+                    Transaksi BBM
+                </a>
             </nav>
         </div>
 
@@ -101,6 +111,11 @@ function isActiveMenu($path, $currentPath)
                    class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/transactions', $currentPath) ? 'bg-white text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white' ?>">
                     Data Transaksi
                 </a>
+
+                <a href="/fuel-transaction"
+                   class="block rounded-lg px-3 py-2 text-sm font-medium <?= isActiveMenu('/fuel-transaction', $currentPath) ? 'bg-white text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white' ?>">
+                    Transaksi BBM
+                </a>
             </nav>
 
             <div class="absolute bottom-6 left-6 right-6 rounded-lg border border-zinc-700 bg-zinc-900 p-4">
@@ -111,7 +126,6 @@ function isActiveMenu($path, $currentPath)
 
         <!-- Main Content -->
         <main class="md:pl-64">
-            <!-- Header desktop -->
             <header class="hidden border-b border-red-100 bg-white px-6 py-4 md:block md:px-8">
                 <div class="flex items-center justify-between">
                     <div>
