@@ -4,6 +4,9 @@ $db = getDatabaseConnection();
 $isEdit = getRequestPath() === '/citizens/edit';
 $error = null;
 $success = null;
+$warning = null;
+
+$app = require __DIR__ . '/../app/config/app.php';
 
 $citizen = [
     'nik' => '',
@@ -17,6 +20,67 @@ $citizen = [
     'kuota_bbm' => '30.00',
     'status_aktif' => 'aktif'
 ];
+
+/**
+ * Fungsi untuk menonaktifkan penerima bansos dari E-KTP Service.
+ * Dipanggil ketika status ekonomi warga berubah dari kurang_mampu/rentan menjadi mampu.
+ */
+function deactivateBansosRecipient($bansosBaseUrl, $nik)
+{
+    if (empty($bansosBaseUrl)) {
+        return [
+            'success' => false,
+            'message' => 'URL Bansos Service belum dikonfigurasi pada E-KTP Service.'
+        ];
+    }
+
+    $url = rtrim($bansosBaseUrl, '/') . '/api/deactivate-recipient/' . urlencode($nik);
+
+    $ch = curl_init($url);
+
+    curl_setopt_array($ch, [
+        CURLOPT_CUSTOMREQUEST => 'PUT',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10,
+        CURLOPT_HTTPHEADER => [
+            'Accept: application/json'
+        ]
+    ]);
+
+    $response = curl_exec($ch);
+    $curlError = curl_error($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    curl_close($ch);
+
+    if ($response === false || !empty($curlError)) {
+        return [
+            'success' => false,
+            'message' => 'Gagal menghubungi Bansos Service: ' . $curlError
+        ];
+    }
+
+    $decoded = json_decode($response, true);
+
+    if (!is_array($decoded)) {
+        return [
+            'success' => false,
+            'message' => 'Response dari Bansos Service tidak valid.'
+        ];
+    }
+
+    if ($httpCode >= 200 && $httpCode < 300 && !empty($decoded['success'])) {
+        return [
+            'success' => true,
+            'message' => $decoded['message'] ?? 'Status bansos berhasil dinonaktifkan.'
+        ];
+    }
+
+    return [
+        'success' => false,
+        'message' => $decoded['message'] ?? 'Gagal menonaktifkan status bansos.'
+    ];
+}
 
 // Ambil data warga ketika mode edit
 if ($isEdit) {
@@ -50,6 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $kuotaBbm = $_POST['kuota_bbm'] ?? 30;
     $statusAktif = $_POST['status_aktif'] ?? 'aktif';
 
+    $oldStatusEkonomi = $citizen['status_ekonomi'] ?? null;
+
     $citizen = [
         'nik' => $nik,
         'nama' => $nama,
@@ -71,49 +137,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Tempat lahir wajib diisi.';
     } elseif (trim($tanggalLahir) === '') {
         $error = 'Tanggal lahir wajib diisi.';
-    } elseif (!in_array($jenisKelamin, ['L', 'P'])) {
+    } elseif (!in_array($jenisKelamin, ['L', 'P'], true)) {
         $error = 'Jenis kelamin tidak valid.';
     } elseif (trim($alamat) === '') {
         $error = 'Alamat wajib diisi.';
-    } elseif (!in_array($statusEkonomi, ['mampu', 'kurang_mampu', 'rentan'])) {
+    } elseif (!in_array($statusEkonomi, ['mampu', 'kurang_mampu', 'rentan'], true)) {
         $error = 'Status ekonomi tidak valid.';
     } elseif (!is_numeric($kuotaBbm) || $kuotaBbm < 0) {
         $error = 'Kuota BBM harus berupa angka dan tidak boleh kurang dari 0.';
     } else {
         try {
             if ($isEdit) {
-                // Update data warga
                 $id = $_GET['id'] ?? null;
 
-                $stmt = $db->prepare("
-                    UPDATE citizens
-                    SET 
-                        nama = ?,
-                        tempat_lahir = ?,
-                        tanggal_lahir = ?,
-                        jenis_kelamin = ?,
-                        alamat = ?,
-                        pekerjaan = ?,
-                        status_ekonomi = ?,
-                        kuota_bbm = ?,
-                        status_aktif = ?
-                    WHERE id = ?
-                ");
+                if (!$id) {
+                    $error = 'ID warga tidak ditemukan.';
+                } else {
+                    // Update data warga di E-KTP
+                    $stmt = $db->prepare("
+                        UPDATE citizens
+                        SET 
+                            nama = ?,
+                            tempat_lahir = ?,
+                            tanggal_lahir = ?,
+                            jenis_kelamin = ?,
+                            alamat = ?,
+                            pekerjaan = ?,
+                            status_ekonomi = ?,
+                            kuota_bbm = ?,
+                            status_aktif = ?
+                        WHERE id = ?
+                    ");
 
-                $stmt->execute([
-                    $nama,
-                    $tempatLahir,
-                    $tanggalLahir,
-                    $jenisKelamin,
-                    $alamat,
-                    $pekerjaan,
-                    $statusEkonomi,
-                    $kuotaBbm,
-                    $statusAktif,
-                    $id
-                ]);
+                    $stmt->execute([
+                        $nama,
+                        $tempatLahir,
+                        $tanggalLahir,
+                        $jenisKelamin,
+                        $alamat,
+                        $pekerjaan,
+                        $statusEkonomi,
+                        $kuotaBbm,
+                        $statusAktif,
+                        $id
+                    ]);
 
-                $success = 'Data warga berhasil diperbarui.';
+                    /**
+                     * Sinkronisasi ke Bansos:
+                     * Jika status ekonomi lama adalah kurang_mampu/rentan,
+                     * lalu status baru menjadi mampu,
+                     * maka penerima bansos dinonaktifkan otomatis.
+                     */
+                    $wasEligibleForBansos = in_array($oldStatusEkonomi, ['kurang_mampu', 'rentan'], true);
+                    $isNowMampu = $statusEkonomi === 'mampu';
+
+                    if ($wasEligibleForBansos && $isNowMampu) {
+                        $syncResult = deactivateBansosRecipient(
+                            $app['bansos_base_url'] ?? null,
+                            $nik
+                        );
+
+                        if ($syncResult['success']) {
+                            $success = 'Data warga berhasil diperbarui. Status penerima bansos juga otomatis dinonaktifkan karena warga berubah menjadi mampu.';
+                        } else {
+                            $success = 'Data warga berhasil diperbarui.';
+                            $warning = 'Namun sinkronisasi ke Bansos gagal: ' . $syncResult['message'];
+                        }
+                    } else {
+                        $success = 'Data warga berhasil diperbarui.';
+                    }
+
+                    // Ambil ulang data terbaru dari database setelah update
+                    $stmt = $db->prepare("SELECT * FROM citizens WHERE id = ? LIMIT 1");
+                    $stmt->execute([$id]);
+                    $updatedCitizen = $stmt->fetch();
+
+                    if ($updatedCitizen) {
+                        $citizen = $updatedCitizen;
+                    }
+                }
             } else {
                 // Cek NIK agar tidak duplikat
                 $checkStmt = $db->prepare("SELECT id FROM citizens WHERE nik = ? LIMIT 1");
@@ -200,8 +302,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     <?php endif; ?>
 
+    <?php if ($warning): ?>
+        <div class="rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <p class="text-sm font-semibold text-amber-700">Peringatan Sinkronisasi</p>
+            <p class="mt-1 text-sm text-amber-700"><?= htmlspecialchars($warning) ?></p>
+        </div>
+    <?php endif; ?>
+
     <div class="rounded-xl border border-slate-200 bg-white p-5">
-        <form method="POST" class="grid gap-5 md:grid-cols-2">
+        <form id="citizenForm" method="POST" class="grid gap-5 md:grid-cols-2">
+            <input
+                type="hidden"
+                id="oldStatusEkonomi"
+                value="<?= htmlspecialchars($citizen['status_ekonomi'] ?? '') ?>"
+            >
+
             <div>
                 <label class="block text-sm font-medium text-slate-700">NIK</label>
                 <input
@@ -276,6 +391,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div>
                 <label class="block text-sm font-medium text-slate-700">Status Ekonomi</label>
                 <select
+                    id="statusEkonomi"
                     name="status_ekonomi"
                     class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-100"
                     required
@@ -284,6 +400,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <option value="kurang_mampu" <?= $citizen['status_ekonomi'] === 'kurang_mampu' ? 'selected' : '' ?>>Kurang Mampu</option>
                     <option value="rentan" <?= $citizen['status_ekonomi'] === 'rentan' ? 'selected' : '' ?>>Rentan</option>
                 </select>
+
+                <?php if ($isEdit): ?>
+                    <p class="mt-1 text-xs text-slate-500">
+                        Jika status diubah dari Kurang Mampu/Rentan menjadi Mampu, sistem akan mencoba menonaktifkan status Bansos secara otomatis.
+                    </p>
+                <?php endif; ?>
             </div>
 
             <div>
@@ -332,3 +454,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 </section>
+
+<script>
+    const citizenForm = document.getElementById('citizenForm');
+    const statusEkonomi = document.getElementById('statusEkonomi');
+    const oldStatusEkonomi = document.getElementById('oldStatusEkonomi');
+
+    if (citizenForm && statusEkonomi && oldStatusEkonomi) {
+        citizenForm.addEventListener('submit', function (event) {
+            const oldValue = oldStatusEkonomi.value;
+            const newValue = statusEkonomi.value;
+
+            const wasEligibleForBansos = oldValue === 'kurang_mampu' || oldValue === 'rentan';
+            const isNowMampu = newValue === 'mampu';
+
+            if (wasEligibleForBansos && isNowMampu) {
+                const confirmed = confirm(
+                    'Status ekonomi warga akan diubah menjadi MAMPU.\n\n' +
+                    'Jika warga sebelumnya terdaftar sebagai penerima Bansos, maka status Bansos akan dinonaktifkan otomatis.\n\n' +
+                    'Lanjutkan perubahan data?'
+                );
+
+                if (!confirmed) {
+                    event.preventDefault();
+                }
+            }
+        });
+    }
+</script>
